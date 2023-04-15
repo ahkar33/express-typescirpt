@@ -5,27 +5,29 @@ import { z } from "zod";
 
 export const findAllUsers = async (req: Request, res: Response) => {
 	try {
-		const users = await db.user.findMany();
+		const users = await db.user.findMany({
+			where: {
+				isDeleted: false,
+			},
+		});
 		res.status(200).json(users);
 	} catch (error) {
-		if (error instanceof z.ZodError) {
-			res.status(422).json(error.issues);
-		}
 		res.status(500).json(error);
 	}
 };
 
 export const findUserById = async (req: Request, res: Response) => {
 	try {
-		const user = await db.user.findUniqueOrThrow({
+		const user = await db.user.findFirstOrThrow({
 			where: {
 				id: req.params.id,
+				isDeleted: false,
 			},
 		});
 		res.status(200).json(user);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			res.status(422).json(error.issues);
+			return res.status(422).json(error.issues);
 		}
 		res.status(500).json(error);
 	}
@@ -33,7 +35,7 @@ export const findUserById = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
 	try {
-		const {email, name, age} = userSchema.parse(req.body);
+		const { email, name, age } = userSchema.parse(req.body);
 		const user = await db.user.create({
 			data: {
 				email,
@@ -74,9 +76,12 @@ export const updateUserById = async (req: Request, res: Response) => {
 
 export const deleteUserById = async (req: Request, res: Response) => {
 	try {
-		const user = await db.user.delete({
+		const user = await db.user.update({
 			where: {
 				id: req.params.id,
+			},
+			data: {
+				isDeleted: true,
 			},
 		});
 		if (user) {

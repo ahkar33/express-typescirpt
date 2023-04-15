@@ -18,29 +18,31 @@ const userSchema_1 = __importDefault(require("../validations/userSchema"));
 const zod_1 = require("zod");
 const findAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield db_1.db.user.findMany();
+        const users = yield db_1.db.user.findMany({
+            where: {
+                isDeleted: false,
+            },
+        });
         res.status(200).json(users);
     }
     catch (error) {
-        if (error instanceof zod_1.z.ZodError) {
-            res.status(422).json(error.issues);
-        }
         res.status(500).json(error);
     }
 });
 exports.findAllUsers = findAllUsers;
 const findUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield db_1.db.user.findUniqueOrThrow({
+        const user = yield db_1.db.user.findFirstOrThrow({
             where: {
                 id: req.params.id,
+                isDeleted: false,
             },
         });
         res.status(200).json(user);
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
-            res.status(422).json(error.issues);
+            return res.status(422).json(error.issues);
         }
         res.status(500).json(error);
     }
@@ -89,9 +91,12 @@ const updateUserById = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.updateUserById = updateUserById;
 const deleteUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield db_1.db.user.delete({
+        const user = yield db_1.db.user.update({
             where: {
                 id: req.params.id,
+            },
+            data: {
+                isDeleted: true,
             },
         });
         if (user) {
