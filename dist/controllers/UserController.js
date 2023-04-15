@@ -60,7 +60,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
-            res.status(422).json(error.issues);
+            return res.status(422).json(error.issues);
         }
         res.status(500).json(error);
     }

@@ -33,7 +33,7 @@ export const findUserById = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
 	try {
-		const { email, name, age } = userSchema.parse(req.body);
+		const {email, name, age} = userSchema.parse(req.body);
 		const user = await db.user.create({
 			data: {
 				email,
@@ -44,7 +44,7 @@ export const createUser = async (req: Request, res: Response) => {
 		res.status(200).json(user);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			res.status(422).json(error.issues);
+			return res.status(422).json(error.issues);
 		}
 		res.status(500).json(error);
 	}

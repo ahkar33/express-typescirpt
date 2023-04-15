@@ -84,7 +84,7 @@ export const createCategory = async (req: Request, res: Response) => {
 		res.status(200).json(category);
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			res.status(422).json(error.issues);
+			return res.status(422).json(error.issues);
 		}
 		res.status(500).json(error);
 	}
