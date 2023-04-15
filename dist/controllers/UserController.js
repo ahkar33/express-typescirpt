@@ -18,29 +18,30 @@ const userSchema_1 = __importDefault(require("../validations/userSchema"));
 const zod_1 = require("zod");
 const findAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield db_1.db.user.findMany();
-        res.status(200).json(user);
+        const users = yield db_1.db.user.findMany();
+        res.status(200).json(users);
     }
     catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            res.status(422).json(error.issues);
+        }
         res.status(500).json(error);
     }
 });
 exports.findAllUsers = findAllUsers;
 const findUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield db_1.db.user.findUnique({
+        const user = yield db_1.db.user.findUniqueOrThrow({
             where: {
                 id: req.params.id,
             },
         });
-        if (user) {
-            res.status(200).json(user);
-        }
-        else {
-            res.status(404).json({ message: "not found" });
-        }
+        res.status(200).json(user);
     }
     catch (error) {
+        if (error instanceof zod_1.z.ZodError) {
+            res.status(422).json(error.issues);
+        }
         res.status(500).json(error);
     }
 });
@@ -67,20 +68,17 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.createUser = createUser;
 const updateUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield db_1.db.user.findUnique({
+        const user = yield db_1.db.user.findUniqueOrThrow({
             where: {
                 id: req.params.id,
             },
         });
-        if (!user) {
-            res.status(404).json("not found");
-        }
         const requestUser = Object.assign(Object.assign({}, user), req.body);
         const resUser = yield db_1.db.user.update({
             where: {
-                id: req.params.id
+                id: req.params.id,
             },
-            data: Object.assign({}, requestUser)
+            data: Object.assign({}, requestUser),
         });
         res.status(200).json(resUser);
     }
