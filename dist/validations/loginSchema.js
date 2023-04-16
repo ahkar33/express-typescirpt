@@ -8,4 +8,3 @@ const userSchema = zod_1.z.object({
     password: zod_1.z.string().min(4),
     isDeleted: zod_1.z.boolean().optional(),
 });
-exports.default = userSchema;

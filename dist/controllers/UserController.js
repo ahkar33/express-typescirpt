@@ -16,9 +16,16 @@ exports.deleteUserById = exports.updateUserById = exports.createUser = exports.f
 const db_1 = require("../utils/db");
 const userSchema_1 = __importDefault(require("../validations/userSchema"));
 const zod_1 = require("zod");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const saltRound = Number(process.env.SALT_ROUND);
 const findAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield db_1.db.user.findMany({
+            select: {
+                name: true,
+                email: true,
+                age: true
+            },
             where: {
                 isDeleted: false,
             },
@@ -50,12 +57,14 @@ const findUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.findUserById = findUserById;
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { email, name, age } = userSchema_1.default.parse(req.body);
+        const { email, name, age, password } = userSchema_1.default.parse(req.body);
+        const hash = bcrypt_1.default.hashSync(password, saltRound);
         const user = yield db_1.db.user.create({
             data: {
                 email,
                 name,
                 age,
+                password: hash,
             },
         });
         res.status(200).json(user);
@@ -111,7 +120,3 @@ const deleteUserById = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.deleteUserById = deleteUserById;
-// export const deleteAllUsers = async (req: Request, res: Response) => {
-// 	const result = await db.user.deleteMany();
-// 	res.status(200).json(result);
-// };

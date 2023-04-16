@@ -2,10 +2,18 @@ import { Request, Response } from "express";
 import { db } from "../utils/db";
 import userSchema from "../validations/userSchema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
+
+const saltRound: number = Number(process.env.SALT_ROUND);
 
 export const findAllUsers = async (req: Request, res: Response) => {
 	try {
 		const users = await db.user.findMany({
+			select: {
+				name: true,
+				email: true,
+				age: true
+			},
 			where: {
 				isDeleted: false,
 			},
@@ -35,12 +43,14 @@ export const findUserById = async (req: Request, res: Response) => {
 
 export const createUser = async (req: Request, res: Response) => {
 	try {
-		const { email, name, age } = userSchema.parse(req.body);
+		const { email, name, age, password } = userSchema.parse(req.body);
+		const hash = bcrypt.hashSync(password, saltRound);
 		const user = await db.user.create({
 			data: {
 				email,
 				name,
 				age,
+				password: hash,
 			},
 		});
 		res.status(200).json(user);
@@ -94,7 +104,3 @@ export const deleteUserById = async (req: Request, res: Response) => {
 	}
 };
 
-// export const deleteAllUsers = async (req: Request, res: Response) => {
-// 	const result = await db.user.deleteMany();
-// 	res.status(200).json(result);
-// };

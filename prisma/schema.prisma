@@ -16,6 +16,7 @@ model User {
   email     String  @unique
   name      String
   age       Int
+  password  String
   isDeleted Boolean @default(false)
   posts     Post[]
 }
