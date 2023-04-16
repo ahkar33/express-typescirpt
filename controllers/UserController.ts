@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { db } from "../utils/db";
+import { db } from "../services/db";
 import userSchema from "../validations/userSchema";
 import { z } from "zod";
 import bcrypt from "bcrypt";

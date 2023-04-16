@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import categorySchema from "../validations/categorySchema";
-import { db } from "../utils/db";
+import { db } from "../services/db";
 import { z } from "zod";
 
 export const findAllCategories = async (req: Request, res: Response) => {

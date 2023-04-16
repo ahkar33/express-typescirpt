@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createCategory = exports.updateCategoryById = exports.deleteCategoryById = exports.findCategoryById = exports.findAllCategories = void 0;
 const categorySchema_1 = __importDefault(require("../validations/categorySchema"));
-const db_1 = require("../utils/db");
+const db_1 = require("../services/db");
 const zod_1 = require("zod");
 const findAllCategories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {

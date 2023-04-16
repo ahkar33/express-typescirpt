@@ -4,7 +4,7 @@ import userRoutes from "./routes/userRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import postRoutes from "./routes/postRoutes";
 import authRoutes from "./routes/authRoutes";
-import { checkToken } from "./utils/checkToken";
+import { checkToken } from "./services/checkToken";
 
 dotenv.config();
 

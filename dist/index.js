@@ -9,7 +9,7 @@ const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const categoryRoutes_1 = __importDefault(require("./routes/categoryRoutes"));
 const postRoutes_1 = __importDefault(require("./routes/postRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
-const checkToken_1 = require("./utils/checkToken");
+const checkToken_1 = require("./services/checkToken");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
