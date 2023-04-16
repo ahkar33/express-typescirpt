@@ -8,7 +8,7 @@ import { User } from "@prisma/client";
 import refreshTokenSchema from "../validations/refreshTokenSchema";
 
 const TOKEN_KEY = process.env.TOKEN_KEY as string;
-const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY;
+const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY as string;
 
 export const refreshToken = async (req: Request, res: Response) => {
 	try {
@@ -22,18 +22,14 @@ export const refreshToken = async (req: Request, res: Response) => {
 		if (!isUserExist) {
 			return res.status(404).json({ message: "user does not exist" });
 		}
-		jwt.verify(
-			refreshToken,
-			REFRESH_TOKEN_KEY as string,
-			async (err: any, user: any) => {
-				if (err) return res.sendStatus(403);
-				let newAccessToken = getAccessToken(user);
-				let newRefreshToken = getRefreshToken(user);
-				return res
-					.status(200)
-					.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
-			}
-		);
+		jwt.verify(refreshToken, REFRESH_TOKEN_KEY, async (err: any, user: any) => {
+			if (err) return res.sendStatus(403);
+			let newAccessToken = getAccessToken(user);
+			let newRefreshToken = getRefreshToken(user);
+			return res
+				.status(200)
+				.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+		});
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			return res.status(422).json(error.issues);
@@ -45,7 +41,7 @@ export const refreshToken = async (req: Request, res: Response) => {
 const getRefreshToken = (user: User) => {
 	let refreshToken = jwt.sign(
 		{ email: user.email, id: user.id },
-		REFRESH_TOKEN_KEY as string,
+		REFRESH_TOKEN_KEY,
 		{
 			expiresIn: "90d",
 		}

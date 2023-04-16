@@ -8,15 +8,38 @@ const SALT_ROUND: number = Number(process.env.SALT_ROUND);
 
 export const findAllUsers = async (req: Request, res: Response) => {
 	try {
+		const { page, row } = req.query;
+		if (page) {
+			const users = await db.user.findMany({
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					age: true,
+				},
+				where: {
+					isDeleted: false,
+				},
+				skip: (Number(row) ?? 5) * Number(page),
+				take: Number(row) ?? 5,
+				orderBy: {
+					name: "asc",
+				},
+			});
+			return res.status(200).json(users);
+		}
 		const users = await db.user.findMany({
 			select: {
 				id: true,
 				name: true,
 				email: true,
-				age: true
+				age: true,
 			},
 			where: {
 				isDeleted: false,
+			},
+			orderBy: {
+				name: "asc",
 			},
 		});
 		res.status(200).json(users);
@@ -46,7 +69,7 @@ export const createUser = async (req: Request, res: Response) => {
 	try {
 		const { email, name, age, password } = userSchema.parse(req.body);
 		const hash = bcrypt.hashSync(password, SALT_ROUND);
-		const user = await db.user.create({
+		await db.user.create({
 			data: {
 				email,
 				name,
@@ -71,7 +94,7 @@ export const updateUserById = async (req: Request, res: Response) => {
 			},
 		});
 		const requestUser = { ...user, ...req.body };
-		const resUser = await db.user.update({
+		await db.user.update({
 			where: {
 				id: req.params.id,
 			},
@@ -104,4 +127,3 @@ export const deleteUserById = async (req: Request, res: Response) => {
 		res.status(500).json(error);
 	}
 };
-

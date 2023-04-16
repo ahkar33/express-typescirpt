@@ -19,16 +19,40 @@ const zod_1 = require("zod");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const SALT_ROUND = Number(process.env.SALT_ROUND);
 const findAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
+        const { page, row } = req.query;
+        if (page) {
+            const users = yield db_1.db.user.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    age: true,
+                },
+                where: {
+                    isDeleted: false,
+                },
+                skip: ((_a = Number(row)) !== null && _a !== void 0 ? _a : 5) * Number(page),
+                take: (_b = Number(row)) !== null && _b !== void 0 ? _b : 5,
+                orderBy: {
+                    name: "asc",
+                },
+            });
+            return res.status(200).json(users);
+        }
         const users = yield db_1.db.user.findMany({
             select: {
                 id: true,
                 name: true,
                 email: true,
-                age: true
+                age: true,
             },
             where: {
                 isDeleted: false,
+            },
+            orderBy: {
+                name: "asc",
             },
         });
         res.status(200).json(users);
@@ -60,7 +84,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { email, name, age, password } = userSchema_1.default.parse(req.body);
         const hash = bcrypt_1.default.hashSync(password, SALT_ROUND);
-        const user = yield db_1.db.user.create({
+        yield db_1.db.user.create({
             data: {
                 email,
                 name,
@@ -86,7 +110,7 @@ const updateUserById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             },
         });
         const requestUser = Object.assign(Object.assign({}, user), req.body);
-        const resUser = yield db_1.db.user.update({
+        yield db_1.db.user.update({
             where: {
                 id: req.params.id,
             },
