@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const TOKEN_KEY: string = process.env.TOKEN_KEY as string;
+const TOKEN_KEY = process.env.TOKEN_KEY as string;
 
 export const checkToken = (req: any, res: any, next: any) => {
 	const authHeader = req.headers["authorization"];

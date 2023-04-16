@@ -6,7 +6,7 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { User } from "@prisma/client";
 
-const TOKEN_KEY: string = process.env.TOKEN_KEY || "dummy_key";
+const TOKEN_KEY = process.env.TOKEN_KEY as string;
 
 const getAccessToken = (user: User) => {
 	let accessToken = jwt.sign({ email: user.email, id: user.id }, TOKEN_KEY, {

@@ -14,8 +14,8 @@ const port = process.env.PORT;
 app.use(express.json());
 
 app.use("/api/user", checkToken, userRoutes);
-app.use("/api/category", categoryRoutes);
-app.use("/api/post", postRoutes);
+app.use("/api/category", checkToken, categoryRoutes);
+app.use("/api/post", checkToken, postRoutes);
 app.use("/api/auth", authRoutes);
 
 app.listen(port, () => {

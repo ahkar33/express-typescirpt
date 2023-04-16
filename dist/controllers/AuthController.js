@@ -18,7 +18,7 @@ const db_1 = require("../utils/db");
 const loginUserSchema_1 = __importDefault(require("../validations/loginUserSchema"));
 const zod_1 = require("zod");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const TOKEN_KEY = process.env.TOKEN_KEY || "dummy_key";
+const TOKEN_KEY = process.env.TOKEN_KEY;
 const getAccessToken = (user) => {
     let accessToken = jsonwebtoken_1.default.sign({ email: user.email, id: user.id }, TOKEN_KEY, {
         expiresIn: "30min",

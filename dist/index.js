@@ -15,8 +15,8 @@ const app = (0, express_1.default)();
 const port = process.env.PORT;
 app.use(express_1.default.json());
 app.use("/api/user", checkToken_1.checkToken, userRoutes_1.default);
-app.use("/api/category", categoryRoutes_1.default);
-app.use("/api/post", postRoutes_1.default);
+app.use("/api/category", checkToken_1.checkToken, categoryRoutes_1.default);
+app.use("/api/post", checkToken_1.checkToken, postRoutes_1.default);
 app.use("/api/auth", authRoutes_1.default);
 app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
