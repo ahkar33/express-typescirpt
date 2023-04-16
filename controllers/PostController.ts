@@ -24,7 +24,7 @@ export const createPost = async (req: Request, res: Response) => {
 		if (categoriesExist.length < categories.length) {
 			return res
 				.status(404)
-				.json({ message: "one of the categories do not exit" });
+				.json({ message: "one of the categories does not exit" });
 		}
 		const post = await db.post.create({
 			data: {

@@ -37,7 +37,7 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (categoriesExist.length < categories.length) {
             return res
                 .status(404)
-                .json({ message: "one of the categories do not exit" });
+                .json({ message: "one of the categories does not exit" });
         }
         const post = yield db_1.db.post.create({
             data: {
