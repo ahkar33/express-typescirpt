@@ -1,57 +1,42 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { db } from "../services/db";
 import loginUserSchema from "../validations/loginUserSchema";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { User } from "@prisma/client";
-import refreshTokenSchema from "../validations/refreshTokenSchema";
+import { createClient } from "redis";
 
 const TOKEN_KEY = process.env.TOKEN_KEY as string;
-const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY as string;
 
-export const refreshToken = async (req: Request, res: Response) => {
-	try {
-		const { refreshToken, userId } = refreshTokenSchema.parse(req.body);
-		if (refreshToken == null || userId == null) return res.sendStatus(401);
-		const isUserExist = await db.user.findUnique({
-			where: {
-				id: userId,
-			},
-		});
-		if (!isUserExist) {
-			return res.status(404).json({ message: "user does not exist" });
-		}
-		jwt.verify(refreshToken, REFRESH_TOKEN_KEY, async (err: any, user: any) => {
-			if (err) return res.sendStatus(403);
-			let newAccessToken = getAccessToken(user);
-			let newRefreshToken = getRefreshToken(user);
-			return res
-				.status(200)
-				.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
-		});
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			return res.status(422).json(error.issues);
-		}
-		res.status(500).json(error);
-	}
-};
+// Create a Redis client
+const redisClient = createClient();
+(async () => {
+	await redisClient.connect();
+})();
 
-const getRefreshToken = (user: User) => {
-	let refreshToken = jwt.sign(
-		{ email: user.email, id: user.id },
-		REFRESH_TOKEN_KEY,
-		{
-			expiresIn: "90d",
+redisClient.on("connect", () => console.log("::> Redis Client Connected"));
+redisClient.on("error", (err) => console.log("<:: Redis Client Error", err));
+
+export const checkToken = (req: any, res: Response, next: NextFunction) => {
+	const authHeader = req.headers["authorization"];
+	const token = authHeader && authHeader.split(" ")[1];
+	if (token == null) return res.sendStatus(401);
+	jwt.verify(token, TOKEN_KEY, async (err: any, user: any) => {
+		if (err) return res.sendStatus(403);
+		// Check if the token is still stored in Redis
+		const tokenValue = await redisClient.get(`jwt:${user.id}`);
+		if (!tokenValue || tokenValue != token) {
+			return res.status(401).json({ message: "Invalid token" });
 		}
-	);
-	return refreshToken;
+		req.user = user;
+		next();
+	});
 };
 
 const getAccessToken = (user: User) => {
 	let accessToken = jwt.sign({ email: user.email, id: user.id }, TOKEN_KEY, {
-		expiresIn: "30min",
+		expiresIn: "30d",
 	});
 	return accessToken;
 };
@@ -66,9 +51,13 @@ export const login = async (req: Request, res: Response) => {
 		});
 		const isValid = bcrypt.compareSync(password, user.password);
 		if (isValid) {
+			// if ((await redisClient.exists(`jwt:${user.id}`)) != 0) {
+			// 	return res.status(401).json({ message: "already logged in" });
+			// }
+			let accessToken = getAccessToken(user);
+			await redisClient.setEx(`jwt:${user.id}`, 2592000, accessToken);
 			res.status(200).json({
-				accessToken: getAccessToken(user),
-				refreshToken: getRefreshToken(user),
+				accessToken: accessToken,
 			});
 		} else {
 			res.status(401).json({ message: "incorrect email or password" });
@@ -77,6 +66,16 @@ export const login = async (req: Request, res: Response) => {
 		if (error instanceof z.ZodError) {
 			return res.status(422).json(error.issues);
 		}
+		res.status(500).json(error);
+	}
+};
+
+export const logout = async (req: any, res: Response) => {
+	try {
+		const user = req.user;
+		await redisClient.del(`jwt:${user.id}`);
+		res.status(200).json({ message: "successfully logout" });
+	} catch (error) {
 		res.status(500).json(error);
 	}
 };
