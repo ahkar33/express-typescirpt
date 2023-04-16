@@ -4,12 +4,13 @@ import userSchema from "../validations/userSchema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
-const saltRound: number = Number(process.env.SALT_ROUND);
+const SALT_ROUND: number = Number(process.env.SALT_ROUND);
 
 export const findAllUsers = async (req: Request, res: Response) => {
 	try {
 		const users = await db.user.findMany({
 			select: {
+				id: true,
 				name: true,
 				email: true,
 				age: true
@@ -44,7 +45,7 @@ export const findUserById = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
 	try {
 		const { email, name, age, password } = userSchema.parse(req.body);
-		const hash = bcrypt.hashSync(password, saltRound);
+		const hash = bcrypt.hashSync(password, SALT_ROUND);
 		const user = await db.user.create({
 			data: {
 				email,
@@ -53,7 +54,7 @@ export const createUser = async (req: Request, res: Response) => {
 				password: hash,
 			},
 		});
-		res.status(200).json(user);
+		res.status(200).json("successfully created");
 	} catch (error) {
 		if (error instanceof z.ZodError) {
 			return res.status(422).json(error.issues);
@@ -78,7 +79,7 @@ export const updateUserById = async (req: Request, res: Response) => {
 				...requestUser,
 			},
 		});
-		res.status(200).json(resUser);
+		res.status(200).json("successfully updated");
 	} catch (error) {
 		res.status(500).json(error);
 	}

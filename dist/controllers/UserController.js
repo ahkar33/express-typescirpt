@@ -17,11 +17,12 @@ const db_1 = require("../utils/db");
 const userSchema_1 = __importDefault(require("../validations/userSchema"));
 const zod_1 = require("zod");
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const saltRound = Number(process.env.SALT_ROUND);
+const SALT_ROUND = Number(process.env.SALT_ROUND);
 const findAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield db_1.db.user.findMany({
             select: {
+                id: true,
                 name: true,
                 email: true,
                 age: true
@@ -58,7 +59,7 @@ exports.findUserById = findUserById;
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, name, age, password } = userSchema_1.default.parse(req.body);
-        const hash = bcrypt_1.default.hashSync(password, saltRound);
+        const hash = bcrypt_1.default.hashSync(password, SALT_ROUND);
         const user = yield db_1.db.user.create({
             data: {
                 email,
@@ -67,7 +68,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 password: hash,
             },
         });
-        res.status(200).json(user);
+        res.status(200).json("successfully created");
     }
     catch (error) {
         if (error instanceof zod_1.z.ZodError) {
@@ -91,7 +92,7 @@ const updateUserById = (req, res) => __awaiter(void 0, void 0, void 0, function*
             },
             data: Object.assign({}, requestUser),
         });
-        res.status(200).json(resUser);
+        res.status(200).json("successfully updated");
     }
     catch (error) {
         res.status(500).json(error);

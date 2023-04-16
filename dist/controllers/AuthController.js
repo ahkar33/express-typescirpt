@@ -17,6 +17,14 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const db_1 = require("../utils/db");
 const loginUserSchema_1 = __importDefault(require("../validations/loginUserSchema"));
 const zod_1 = require("zod");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const TOKEN_KEY = process.env.TOKEN_KEY || "dummy_key";
+const getAccessToken = (user) => {
+    let accessToken = jsonwebtoken_1.default.sign({ email: user.email, id: user.id }, TOKEN_KEY, {
+        expiresIn: "30min",
+    });
+    return accessToken;
+};
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = loginUserSchema_1.default.parse(req.body);
@@ -27,7 +35,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
         const isValid = bcrypt_1.default.compareSync(password, user.password);
         if (isValid) {
-            res.status(200).json({ message: "successfully login" });
+            res.status(200).json({ token: getAccessToken(user) });
         }
         else {
             res.status(401).json({ message: "incorrect email or password" });

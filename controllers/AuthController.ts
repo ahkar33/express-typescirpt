@@ -3,6 +3,17 @@ import bcrypt from "bcrypt";
 import { db } from "../utils/db";
 import loginUserSchema from "../validations/loginUserSchema";
 import { z } from "zod";
+import jwt from "jsonwebtoken";
+import { User } from "@prisma/client";
+
+const TOKEN_KEY: string = process.env.TOKEN_KEY || "dummy_key";
+
+const getAccessToken = (user: User) => {
+	let accessToken = jwt.sign({ email: user.email, id: user.id }, TOKEN_KEY, {
+		expiresIn: "30min",
+	});
+	return accessToken;
+};
 
 export const login = async (req: Request, res: Response) => {
 	try {
@@ -14,7 +25,7 @@ export const login = async (req: Request, res: Response) => {
 		});
 		const isValid = bcrypt.compareSync(password, user.password);
 		if (isValid) {
-			res.status(200).json({ message: "successfully login" });
+			res.status(200).json({ token: getAccessToken(user) });
 		} else {
 			res.status(401).json({ message: "incorrect email or password" });
 		}

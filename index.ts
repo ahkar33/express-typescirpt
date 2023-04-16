@@ -4,6 +4,7 @@ import userRoutes from "./routes/userRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import postRoutes from "./routes/postRoutes";
 import authRoutes from "./routes/authRoutes";
+import { checkToken } from "./utils/checkToken";
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ const port = process.env.PORT;
 
 app.use(express.json());
 
-app.use("/api/user", userRoutes);
+app.use("/api/user", checkToken, userRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/auth", authRoutes);
