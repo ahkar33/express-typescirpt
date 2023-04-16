@@ -6,28 +6,8 @@ import bcrypt from "bcrypt";
 
 const SALT_ROUND: number = Number(process.env.SALT_ROUND);
 
-export const findAllUsers = async (req: Request, res: Response) => {
+const getAllUsers = async (pagination?: { skip: number; take: number }) => {
 	try {
-		const { page, row } = req.query;
-		if (page) {
-			const users = await db.user.findMany({
-				select: {
-					id: true,
-					name: true,
-					email: true,
-					age: true,
-				},
-				where: {
-					isDeleted: false,
-				},
-				skip: (Number(row) ?? 5) * Number(page),
-				take: Number(row) ?? 5,
-				orderBy: {
-					name: "asc",
-				},
-			});
-			return res.status(200).json(users);
-		}
 		const users = await db.user.findMany({
 			select: {
 				id: true,
@@ -38,10 +18,28 @@ export const findAllUsers = async (req: Request, res: Response) => {
 			where: {
 				isDeleted: false,
 			},
+			...pagination,
 			orderBy: {
 				name: "asc",
 			},
 		});
+		return users;
+	} catch (error) {
+		return error;
+	}
+};
+
+export const findAllUsers = async (req: Request, res: Response) => {
+	try {
+		const { page, row } = req.query;
+		if (page) {
+			const users = await getAllUsers({
+				skip: (Number(row) ?? 5) * Number(page),
+				take: Number(row) ?? 5,
+			});
+			return res.status(200).json(users);
+		}
+		const users = await getAllUsers();
 		res.status(200).json(users);
 	} catch (error) {
 		res.status(500).json(error);

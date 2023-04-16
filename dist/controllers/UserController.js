@@ -18,43 +18,36 @@ const userSchema_1 = __importDefault(require("../validations/userSchema"));
 const zod_1 = require("zod");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const SALT_ROUND = Number(process.env.SALT_ROUND);
+const getAllUsers = (pagination) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const users = yield db_1.db.user.findMany(Object.assign(Object.assign({ select: {
+                id: true,
+                name: true,
+                email: true,
+                age: true,
+            }, where: {
+                isDeleted: false,
+            } }, pagination), { orderBy: {
+                name: "asc",
+            } }));
+        return users;
+    }
+    catch (error) {
+        return error;
+    }
+});
 const findAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const { page, row } = req.query;
         if (page) {
-            const users = yield db_1.db.user.findMany({
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    age: true,
-                },
-                where: {
-                    isDeleted: false,
-                },
+            const users = yield getAllUsers({
                 skip: ((_a = Number(row)) !== null && _a !== void 0 ? _a : 5) * Number(page),
                 take: (_b = Number(row)) !== null && _b !== void 0 ? _b : 5,
-                orderBy: {
-                    name: "asc",
-                },
             });
             return res.status(200).json(users);
         }
-        const users = yield db_1.db.user.findMany({
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                age: true,
-            },
-            where: {
-                isDeleted: false,
-            },
-            orderBy: {
-                name: "asc",
-            },
-        });
+        const users = yield getAllUsers();
         res.status(200).json(users);
     }
     catch (error) {
